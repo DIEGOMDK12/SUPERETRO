@@ -40,6 +40,13 @@ const games: Game[] = [
     cover: "https://upload.wikimedia.org/wikipedia/en/1/1d/SF2_JPN_flyer.jpg",
     rom: "https://archive.org/download/StreetFighter2Turbo_201812/Street%20Fighter%20II%20Turbo.zip",
   },
+  {
+    id: 5,
+    title: "Super Bomberman 4",
+    core: "snes",
+    cover: "https://upload.wikimedia.org/wikipedia/en/8/85/Super_Bomberman_4_Coverart.png",
+    rom: "/bomberman4.zip",
+  },
 ];
 
 export default function Home() {

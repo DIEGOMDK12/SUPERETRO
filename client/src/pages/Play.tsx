@@ -33,15 +33,16 @@ export default function Play() {
     if (scriptLoaded.current) return;
     scriptLoaded.current = true;
 
-    const proxyUrl = `/api/rom?url=${encodeURIComponent(game)}`;
+    const isLocalFile = game.startsWith("/") || game.startsWith("./");
+    const gameUrl = isLocalFile ? game : `/api/rom?url=${encodeURIComponent(game)}`;
     
     window.EJS_player = "#game";
     window.EJS_core = core;
-    window.EJS_gameUrl = proxyUrl;
+    window.EJS_gameUrl = gameUrl;
     window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
     window.EJS_startOnLoaded = true;
 
-    fetch(proxyUrl, { method: "HEAD" })
+    fetch(gameUrl, { method: "HEAD" })
       .then((res) => {
         if (!res.ok) {
           throw new Error("ROM não disponível no momento");
