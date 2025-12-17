@@ -13,9 +13,8 @@ import { Link } from "wouter";
 import type { Game } from "@shared/schema";
 
 const platforms = [
-  { id: "snes", name: "Super Nintendo", accept: ".zip,.sfc,.smc" },
-  { id: "n64", name: "Nintendo 64", accept: ".zip,.n64,.z64,.v64" },
-  { id: "psx", name: "PlayStation 1", accept: ".bin,.cue,.iso,.zip" },
+  { id: "snes", name: "SNS", accept: ".zip,.sfc,.smc" },
+  { id: "n64", name: "SNS-64", accept: ".zip,.n64,.z64,.v64" },
 ];
 
 export default function Admin() {
