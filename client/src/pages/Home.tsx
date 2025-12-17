@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
@@ -28,8 +29,15 @@ const localGames: GameWithCore[] = [
   },
 ];
 
+const platforms = [
+  { id: "all", name: "Todos" },
+  { id: "snes", name: "Super Nintendo" },
+  { id: "psp", name: "PSP" },
+];
+
 export default function Home() {
   const [, setLocation] = useLocation();
+  const [selectedPlatform, setSelectedPlatform] = useState("all");
 
   const { data: apiGames = [] } = useQuery<Game[]>({
     queryKey: ["/api/games"],
@@ -39,6 +47,10 @@ export default function Home() {
     ...localGames,
     ...apiGames.map(g => ({ ...g, core: g.core || "snes" })),
   ];
+
+  const filteredGames = selectedPlatform === "all" 
+    ? allGames 
+    : allGames.filter(g => g.core === selectedPlatform);
 
   const handlePlayGame = (game: GameWithCore) => {
     const params = new URLSearchParams({
@@ -59,7 +71,21 @@ export default function Home() {
         </Link>
       </div>
       <main className="flex-1">
-        <GameGrid games={allGames} onPlayGame={handlePlayGame} />
+        <div className="flex justify-center gap-2 mb-6 px-4">
+          {platforms.map((platform) => (
+            <Button
+              key={platform.id}
+              variant={selectedPlatform === platform.id ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedPlatform(platform.id)}
+              data-testid={`button-platform-${platform.id}`}
+              className="font-mono text-xs"
+            >
+              {platform.name}
+            </Button>
+          ))}
+        </div>
+        <GameGrid games={filteredGames} onPlayGame={handlePlayGame} />
       </main>
       <Footer />
     </div>

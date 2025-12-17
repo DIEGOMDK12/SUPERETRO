@@ -5,14 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Trash2, Upload, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import type { Game } from "@shared/schema";
 
+const platforms = [
+  { id: "snes", name: "Super Nintendo", accept: ".zip,.sfc,.smc" },
+  { id: "psp", name: "PSP", accept: ".iso,.cso,.zip" },
+];
+
 export default function Admin() {
   const { toast } = useToast();
   const [title, setTitle] = useState("");
+  const [platform, setPlatform] = useState("snes");
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [romFile, setRomFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -22,11 +30,8 @@ export default function Admin() {
   });
 
   const createGame = useMutation({
-    mutationFn: async (gameData: { title: string; cover: string; rom: string }) => {
-      return apiRequest("POST", "/api/games", {
-        ...gameData,
-        core: "snes",
-      });
+    mutationFn: async (gameData: { title: string; cover: string; rom: string; core: string }) => {
+      return apiRequest("POST", "/api/games", gameData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/games"] });
@@ -83,13 +88,16 @@ export default function Admin() {
       });
       const { path: romPath } = await romResponse.json();
 
-      await createGame.mutateAsync({ title, cover: coverPath, rom: romPath });
+      await createGame.mutateAsync({ title, cover: coverPath, rom: romPath, core: platform });
     } catch (err) {
       toast({ title: "Erro no upload", variant: "destructive" });
     } finally {
       setUploading(false);
     }
   };
+
+  const selectedPlatform = platforms.find(p => p.id === platform);
+  const getPlatformName = (core: string) => platforms.find(p => p.id === core)?.name || core.toUpperCase();
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -109,6 +117,22 @@ export default function Admin() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="platform">Plataforma</Label>
+                <Select value={platform} onValueChange={setPlatform}>
+                  <SelectTrigger data-testid="select-platform">
+                    <SelectValue placeholder="Selecione a plataforma" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {platforms.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="title">Nome do Jogo</Label>
                 <Input
@@ -132,12 +156,14 @@ export default function Admin() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="rom">Arquivo ROM (ZIP)</Label>
+                <Label htmlFor="rom">
+                  Arquivo ROM ({platform === "psp" ? "ISO/CSO/ZIP" : "ZIP/SFC/SMC"})
+                </Label>
                 <Input
                   id="rom"
                   data-testid="input-rom"
                   type="file"
-                  accept=".zip"
+                  accept={selectedPlatform?.accept || ".zip"}
                   onChange={(e) => setRomFile(e.target.files?.[0] || null)}
                 />
               </div>
@@ -178,7 +204,12 @@ export default function Admin() {
                         alt={game.title}
                         className="w-12 h-16 object-cover rounded"
                       />
-                      <span className="font-medium">{game.title}</span>
+                      <div className="flex flex-col gap-1">
+                        <span className="font-medium">{game.title}</span>
+                        <Badge variant="secondary" className="w-fit text-xs">
+                          {getPlatformName(game.core)}
+                        </Badge>
+                      </div>
                     </div>
                     <Button
                       variant="ghost"
