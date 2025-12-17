@@ -46,3 +46,19 @@ export const insertSaveSchema = createInsertSchema(saves).omit({
 
 export type InsertSave = z.infer<typeof insertSaveSchema>;
 export type Save = typeof saves.$inferSelect;
+
+export const files = pgTable("files", {
+  id: serial("id").primaryKey(),
+  filename: text("filename").notNull(),
+  mimeType: text("mime_type").notNull(),
+  data: text("data").notNull(),
+  createdAt: text("created_at").notNull().default(sql`now()`),
+});
+
+export const insertFileSchema = createInsertSchema(files).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertFile = z.infer<typeof insertFileSchema>;
+export type FileRecord = typeof files.$inferSelect;

@@ -143,19 +143,18 @@ export async function registerRoutes(
       req.on("end", async () => {
         const buffer = Buffer.concat(chunks);
         const filename = req.headers["x-filename"] as string || `rom-${Date.now()}.zip`;
-        const safeName = filename.replace(/[^a-zA-Z0-9.-]/g, "-").toLowerCase();
-        const uploadDir = path.join(process.cwd(), "client", "public", "roms");
+        const base64Data = buffer.toString("base64");
         
-        if (!fs.existsSync(uploadDir)) {
-          fs.mkdirSync(uploadDir, { recursive: true });
-        }
+        const file = await storage.createFile({
+          filename,
+          mimeType: "application/octet-stream",
+          data: base64Data,
+        });
         
-        const filePath = path.join(uploadDir, safeName);
-        fs.writeFileSync(filePath, buffer);
-        
-        res.json({ path: `/roms/${safeName}` });
+        res.json({ path: `/api/files/${file.id}` });
       });
     } catch (err) {
+      console.error("ROM upload error:", err);
       res.status(500).json({ error: "Failed to upload ROM" });
     }
   });
@@ -171,20 +170,38 @@ export async function registerRoutes(
       req.on("end", async () => {
         const buffer = Buffer.concat(chunks);
         const filename = req.headers["x-filename"] as string || `cover-${Date.now()}.jpg`;
-        const safeName = `cover-${Date.now()}-${filename.replace(/[^a-zA-Z0-9.-]/g, "-").toLowerCase()}`;
-        const uploadDir = path.join(process.cwd(), "client", "public", "covers");
+        const base64Data = buffer.toString("base64");
+        const mimeType = filename.endsWith(".png") ? "image/png" : "image/jpeg";
         
-        if (!fs.existsSync(uploadDir)) {
-          fs.mkdirSync(uploadDir, { recursive: true });
-        }
+        const file = await storage.createFile({
+          filename,
+          mimeType,
+          data: base64Data,
+        });
         
-        const filePath = path.join(uploadDir, safeName);
-        fs.writeFileSync(filePath, buffer);
-        
-        res.json({ path: `/covers/${safeName}` });
+        res.json({ path: `/api/files/${file.id}` });
       });
     } catch (err) {
+      console.error("Cover upload error:", err);
       res.status(500).json({ error: "Failed to upload cover" });
+    }
+  });
+
+  app.get("/api/files/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const file = await storage.getFile(id);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      const buffer = Buffer.from(file.data, "base64");
+      res.setHeader("Content-Type", file.mimeType);
+      res.setHeader("Content-Length", buffer.length);
+      res.setHeader("Cache-Control", "public, max-age=31536000");
+      res.send(buffer);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to fetch file" });
     }
   });
   

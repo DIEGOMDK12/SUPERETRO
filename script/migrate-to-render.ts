@@ -48,6 +48,17 @@ async function migrate() {
     `);
     console.log("Created saves table");
 
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS files (
+        id SERIAL PRIMARY KEY,
+        filename TEXT NOT NULL,
+        mime_type TEXT NOT NULL,
+        data TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT now()
+      );
+    `);
+    console.log("Created files table");
+
     console.log("Migration completed successfully!");
   } catch (error) {
     console.error("Migration failed:", error);
