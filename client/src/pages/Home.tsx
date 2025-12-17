@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { useLocation, Link } from "wouter";
+import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import GameGrid from "@/components/GameGrid";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
 import type { Game } from "@shared/schema";
 
 interface GameWithCore extends Game {
@@ -63,13 +62,6 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <div className="absolute top-4 right-4">
-        <Link href="/admin">
-          <Button variant="ghost" size="icon" data-testid="button-admin">
-            <Settings className="h-5 w-5" />
-          </Button>
-        </Link>
-      </div>
       <main className="flex-1">
         <div className="flex justify-center gap-2 mb-6 px-4">
           {platforms.map((platform) => (
