@@ -1,13 +1,14 @@
 # SUPER NINTENDO CLOUD
 
 ## Overview
-Site de jogos retrô focado em Super Nintendo (SNES) com emulador integrado usando EmulatorJS.
+Site de jogos retrô SNS (Super Nintendo) e SNS-64 (Nintendo 64) com emulador integrado usando EmulatorJS.
 
 ## Current State
 - **Frontend**: Completo com design retrô anos 90 (roxo/cinza)
-- **Backend**: API para gerenciamento de jogos e upload de ROMs
-- **Admin Panel**: Painel em /admin para adicionar jogos via upload
-- **Status**: Funcional com jogos locais
+- **Backend**: API protegida com autenticação por token
+- **Admin Panel**: Painel seguro em /admin com login obrigatório
+- **Security**: Sistema de autenticação com credenciais via variáveis de ambiente
+- **Status**: Funcional com jogos persistentes no PostgreSQL
 
 ## Project Structure
 ```
@@ -35,10 +36,14 @@ shared/
 2. X-Men - Mutant Apocalypse
 
 ## Features
-- Upload de ROMs via painel admin (/admin)
+- Sistema de login seguro (credenciais: ADMIN_USERNAME/ADMIN_PASSWORD)
+- Upload de ROMs via painel admin protegido (/admin)
+- Barra de progresso durante uploads
+- Dashboard com estatísticas de jogos
 - Grade de jogos com 2 itens por linha
-- Emulador SNES integrado
-- Ícone de configurações para acessar admin
+- Emulador SNS e SNS-64 integrado
+- Modo fullscreen e otimização mobile
+- Cloud saves para jogadores
 
 ## Tech Stack
 - React + TypeScript + Vite
@@ -48,6 +53,13 @@ shared/
 - Drizzle ORM (schema)
 - Fonte: Press Start 2P (pixelada)
 
-## Known Limitations
-- Jogos adicionados via admin são armazenados em memória (não persistem após reinício)
-- Para persistência, configurar banco de dados PostgreSQL
+## Authentication
+- Acesse /login para autenticar
+- Credenciais definidas via variáveis de ambiente (ADMIN_USERNAME, ADMIN_PASSWORD)
+- Token armazenado no localStorage após login
+- Todas as rotas de admin protegidas com Bearer token
+
+## Environment Variables
+- ADMIN_USERNAME: Nome de usuário do admin
+- ADMIN_PASSWORD: Senha do admin
+- DATABASE_URL: URL do PostgreSQL
