@@ -47,6 +47,13 @@ const games: Game[] = [
     cover: "https://upload.wikimedia.org/wikipedia/en/8/85/Super_Bomberman_4_Coverart.png",
     rom: "/bomberman4.zip",
   },
+  {
+    id: 6,
+    title: "X-Men - Mutant Apocalypse",
+    core: "snes",
+    cover: "https://upload.wikimedia.org/wikipedia/en/7/7f/X-Men_Mutant_Apocalypse_cover.jpg",
+    rom: "/xmen-mutant-apocalypse.zip",
+  },
 ];
 
 export default function Home() {
