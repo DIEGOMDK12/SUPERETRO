@@ -1,20 +1,25 @@
-import { type User, type InsertUser } from "@shared/schema";
+import { type User, type InsertUser, type Game, type InsertGame } from "@shared/schema";
 import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  getGames(): Promise<Game[]>;
+  getGame(id: number): Promise<Game | undefined>;
+  createGame(game: InsertGame): Promise<Game>;
+  deleteGame(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
+  private games: Map<number, Game>;
+  private gameIdCounter: number;
 
   constructor() {
     this.users = new Map();
+    this.games = new Map();
+    this.gameIdCounter = 1;
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -32,6 +37,31 @@ export class MemStorage implements IStorage {
     const user: User = { ...insertUser, id };
     this.users.set(id, user);
     return user;
+  }
+
+  async getGames(): Promise<Game[]> {
+    return Array.from(this.games.values());
+  }
+
+  async getGame(id: number): Promise<Game | undefined> {
+    return this.games.get(id);
+  }
+
+  async createGame(insertGame: InsertGame): Promise<Game> {
+    const id = this.gameIdCounter++;
+    const game: Game = { 
+      id,
+      title: insertGame.title,
+      core: insertGame.core || "snes",
+      cover: insertGame.cover,
+      rom: insertGame.rom,
+    };
+    this.games.set(id, game);
+    return game;
+  }
+
+  async deleteGame(id: number): Promise<boolean> {
+    return this.games.delete(id);
   }
 }
 

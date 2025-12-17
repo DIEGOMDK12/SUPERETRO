@@ -2,6 +2,10 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import https from "https";
 import http from "http";
+import { storage } from "./storage";
+import { insertGameSchema } from "@shared/schema";
+import fs from "fs";
+import path from "path";
 
 function fetchWithRedirects(url: string, maxRedirects = 5): Promise<http.IncomingMessage> {
   return new Promise((resolve, reject) => {
@@ -42,6 +46,66 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+
+  app.get("/api/games", async (_req, res) => {
+    try {
+      const games = await storage.getGames();
+      res.json(games);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to fetch games" });
+    }
+  });
+
+  app.post("/api/games", async (req, res) => {
+    try {
+      const result = insertGameSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ error: result.error.message });
+      }
+      const game = await storage.createGame(result.data);
+      res.status(201).json(game);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to create game" });
+    }
+  });
+
+  app.delete("/api/games/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteGame(id);
+      if (deleted) {
+        res.status(204).send();
+      } else {
+        res.status(404).json({ error: "Game not found" });
+      }
+    } catch (err) {
+      res.status(500).json({ error: "Failed to delete game" });
+    }
+  });
+
+  app.post("/api/upload-rom", async (req, res) => {
+    try {
+      const chunks: Buffer[] = [];
+      req.on("data", (chunk) => chunks.push(chunk));
+      req.on("end", async () => {
+        const buffer = Buffer.concat(chunks);
+        const filename = req.headers["x-filename"] as string || `rom-${Date.now()}.zip`;
+        const safeName = filename.replace(/[^a-zA-Z0-9.-]/g, "-").toLowerCase();
+        const uploadDir = path.join(process.cwd(), "client", "public", "roms");
+        
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        
+        const filePath = path.join(uploadDir, safeName);
+        fs.writeFileSync(filePath, buffer);
+        
+        res.json({ path: `/roms/${safeName}` });
+      });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to upload ROM" });
+    }
+  });
   
   app.get("/api/rom", async (req, res) => {
     const url = req.query.url as string;
