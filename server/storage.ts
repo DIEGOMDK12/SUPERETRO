@@ -1,6 +1,6 @@
-import { type User, type InsertUser, type Game, type InsertGame, users, games } from "@shared/schema";
+import { type User, type InsertUser, type Game, type InsertGame, type Save, type InsertSave, users, games, saves } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -10,6 +10,8 @@ export interface IStorage {
   getGame(id: number): Promise<Game | undefined>;
   createGame(game: InsertGame): Promise<Game>;
   deleteGame(id: number): Promise<boolean>;
+  getSave(gameId: string): Promise<Save | undefined>;
+  createSave(save: InsertSave): Promise<Save>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -48,6 +50,17 @@ export class DatabaseStorage implements IStorage {
   async deleteGame(id: number): Promise<boolean> {
     const result = await db.delete(games).where(eq(games.id, id));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  async getSave(gameId: string): Promise<Save | undefined> {
+    const [save] = await db.select().from(saves).where(eq(saves.gameId, gameId)).orderBy(desc(saves.id)).limit(1);
+    return save;
+  }
+
+  async createSave(insertSave: InsertSave): Promise<Save> {
+    await db.delete(saves).where(eq(saves.gameId, insertSave.gameId));
+    const [save] = await db.insert(saves).values(insertSave).returning();
+    return save;
   }
 }
 

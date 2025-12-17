@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import https from "https";
 import http from "http";
 import { storage } from "./storage";
-import { insertGameSchema } from "@shared/schema";
+import { insertGameSchema, insertSaveSchema } from "@shared/schema";
 import fs from "fs";
 import path from "path";
 
@@ -169,6 +169,32 @@ export async function registerRoutes(
     } catch (err) {
       console.error("ROM proxy error:", err);
       res.status(500).json({ error: "Failed to fetch ROM" });
+    }
+  });
+
+  app.get("/api/saves/:gameId", async (req, res) => {
+    try {
+      const save = await storage.getSave(req.params.gameId);
+      if (save) {
+        res.json(save);
+      } else {
+        res.status(404).json({ error: "Save not found" });
+      }
+    } catch (err) {
+      res.status(500).json({ error: "Failed to fetch save" });
+    }
+  });
+
+  app.post("/api/saves", async (req, res) => {
+    try {
+      const result = insertSaveSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ error: result.error.message });
+      }
+      const save = await storage.createSave(result.data);
+      res.status(201).json(save);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to save game" });
     }
   });
 

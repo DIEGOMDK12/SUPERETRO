@@ -31,3 +31,18 @@ export const insertGameSchema = createInsertSchema(games).omit({
 
 export type InsertGame = z.infer<typeof insertGameSchema>;
 export type Game = typeof games.$inferSelect;
+
+export const saves = pgTable("saves", {
+  id: serial("id").primaryKey(),
+  gameId: text("game_id").notNull(),
+  saveData: text("save_data").notNull(),
+  createdAt: text("created_at").notNull().default(sql`now()`),
+});
+
+export const insertSaveSchema = createInsertSchema(saves).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertSave = z.infer<typeof insertSaveSchema>;
+export type Save = typeof saves.$inferSelect;
