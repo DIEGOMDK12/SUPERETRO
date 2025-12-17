@@ -106,6 +106,30 @@ export async function registerRoutes(
       res.status(500).json({ error: "Failed to upload ROM" });
     }
   });
+
+  app.post("/api/upload-cover", async (req, res) => {
+    try {
+      const chunks: Buffer[] = [];
+      req.on("data", (chunk) => chunks.push(chunk));
+      req.on("end", async () => {
+        const buffer = Buffer.concat(chunks);
+        const filename = req.headers["x-filename"] as string || `cover-${Date.now()}.jpg`;
+        const safeName = `cover-${Date.now()}-${filename.replace(/[^a-zA-Z0-9.-]/g, "-").toLowerCase()}`;
+        const uploadDir = path.join(process.cwd(), "client", "public", "covers");
+        
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        
+        const filePath = path.join(uploadDir, safeName);
+        fs.writeFileSync(filePath, buffer);
+        
+        res.json({ path: `/covers/${safeName}` });
+      });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to upload cover" });
+    }
+  });
   
   app.get("/api/rom", async (req, res) => {
     const url = req.query.url as string;

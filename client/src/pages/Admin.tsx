@@ -13,7 +13,7 @@ import type { Game } from "@shared/schema";
 export default function Admin() {
   const { toast } = useToast();
   const [title, setTitle] = useState("");
-  const [cover, setCover] = useState("");
+  const [coverFile, setCoverFile] = useState<File | null>(null);
   const [romFile, setRomFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -31,7 +31,7 @@ export default function Admin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/games"] });
       setTitle("");
-      setCover("");
+      setCoverFile(null);
       setRomFile(null);
       toast({ title: "Jogo adicionado com sucesso!" });
     },
@@ -53,7 +53,7 @@ export default function Admin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title || !cover || !romFile) {
+    if (!title || !coverFile || !romFile) {
       toast({ title: "Preencha todos os campos", variant: "destructive" });
       return;
     }
@@ -61,19 +61,29 @@ export default function Admin() {
     setUploading(true);
 
     try {
-      const arrayBuffer = await romFile.arrayBuffer();
-      const response = await fetch("/api/upload-rom", {
+      const coverBuffer = await coverFile.arrayBuffer();
+      const coverResponse = await fetch("/api/upload-cover", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/octet-stream",
+          "X-Filename": coverFile.name,
+        },
+        body: coverBuffer,
+      });
+      const { path: coverPath } = await coverResponse.json();
+
+      const romBuffer = await romFile.arrayBuffer();
+      const romResponse = await fetch("/api/upload-rom", {
         method: "POST",
         headers: {
           "Content-Type": "application/octet-stream",
           "X-Filename": romFile.name,
         },
-        body: arrayBuffer,
+        body: romBuffer,
       });
+      const { path: romPath } = await romResponse.json();
 
-      const { path } = await response.json();
-
-      await createGame.mutateAsync({ title, cover, rom: path });
+      await createGame.mutateAsync({ title, cover: coverPath, rom: romPath });
     } catch (err) {
       toast({ title: "Erro no upload", variant: "destructive" });
     } finally {
@@ -111,13 +121,13 @@ export default function Admin() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="cover">URL da Capa</Label>
+                <Label htmlFor="cover">Imagem da Capa</Label>
                 <Input
                   id="cover"
                   data-testid="input-cover"
-                  value={cover}
-                  onChange={(e) => setCover(e.target.value)}
-                  placeholder="https://exemplo.com/capa.jpg"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
                 />
               </div>
 
