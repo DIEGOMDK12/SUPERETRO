@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "web"]
+modules = ["nodejs-20", "web", "postgresql-16"]
 run = "npm run dev"
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
@@ -46,3 +46,6 @@ expertMode = true
 [userenv.shared]
 ADMIN_USERNAME = "Diegomdk"
 ADMIN_PASSWORD = "506731"
+
+[userenv.production]
+RENDER_DATABASE_URL = "postgresql://retro_games_db_37ng_user:M7SMQIRBqS0ZnDPq71QI4Sz82fGU2gfv@dpg-d51e6ll6ubrc73diqdh0-a/retro_games_db_37ng"
