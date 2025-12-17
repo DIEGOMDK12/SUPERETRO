@@ -20,7 +20,7 @@ export default function GameGrid({ games, onPlayGame }: GameGridProps) {
         <h2 className="font-mono text-sm md:text-base text-center text-muted-foreground mb-8">
           SELECIONE UM JOGO
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-3xl mx-auto">
           {games.map((game) => (
             <GameCard key={game.id} game={game} onPlay={onPlayGame} />
           ))}
