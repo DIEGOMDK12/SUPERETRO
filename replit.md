@@ -9,6 +9,7 @@ Site de jogos retrô SNS (Super Nintendo) e SNS-64 (Nintendo 64) com emulador in
 - **Admin Panel**: Painel seguro em /admin com login obrigatório
 - **Security**: Sistema de autenticação com credenciais via variáveis de ambiente
 - **Status**: Funcional com jogos persistentes no PostgreSQL
+- **File Storage**: Arquivos (ROMs e capas) armazenados no banco de dados como base64
 
 ## Project Structure
 ```
