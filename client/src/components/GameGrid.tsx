@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import GameCard from "./GameCard";
 
 interface Game {
@@ -13,7 +14,11 @@ interface GameGridProps {
   onPlayGame: (game: Game) => void;
 }
 
-export default function GameGrid({ games, onPlayGame }: GameGridProps) {
+const GameGrid = memo(function GameGrid({ games, onPlayGame }: GameGridProps) {
+  const handlePlay = useCallback((game: Game) => {
+    onPlayGame(game);
+  }, [onPlayGame]);
+
   return (
     <section className="py-12 px-4">
       <div className="max-w-7xl mx-auto">
@@ -22,10 +27,12 @@ export default function GameGrid({ games, onPlayGame }: GameGridProps) {
         </h2>
         <div className="grid grid-cols-2 gap-4 max-w-lg mx-auto">
           {games.map((game) => (
-            <GameCard key={game.id} game={game} onPlay={onPlayGame} />
+            <GameCard key={game.id} game={game} onPlay={handlePlay} />
           ))}
         </div>
       </div>
     </section>
   );
-}
+});
+
+export default GameGrid;

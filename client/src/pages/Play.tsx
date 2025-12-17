@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, AlertCircle } from "lucide-react";
@@ -17,6 +17,7 @@ export default function Play() {
   const [, setLocation] = useLocation();
   const containerRef = useRef<HTMLDivElement>(null);
   const scriptLoaded = useRef(false);
+  const abortController = useRef<AbortController | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,29 +43,56 @@ export default function Play() {
     window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
     window.EJS_startOnLoaded = true;
 
-    fetch(gameUrl, { method: "HEAD" })
+    abortController.current = new AbortController();
+    const timeoutId = setTimeout(() => {
+      abortController.current?.abort();
+    }, 15000);
+
+    const loadEmulator = () => {
+      const script = document.createElement("script");
+      script.src = "https://cdn.emulatorjs.org/stable/data/loader.js";
+      script.async = true;
+      document.body.appendChild(script);
+    };
+
+    fetch(gameUrl, { 
+      method: "HEAD",
+      signal: abortController.current.signal
+    })
       .then((res) => {
+        clearTimeout(timeoutId);
         if (!res.ok) {
           throw new Error("ROM não disponível no momento");
         }
         setLoading(false);
-        const script = document.createElement("script");
-        script.src = "https://cdn.emulatorjs.org/stable/data/loader.js";
-        script.async = true;
-        document.body.appendChild(script);
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(loadEmulator, { timeout: 1000 });
+        } else {
+          setTimeout(loadEmulator, 100);
+        }
       })
-      .catch(() => {
+      .catch((err) => {
+        clearTimeout(timeoutId);
         setLoading(false);
-        setError("O Archive.org está temporariamente indisponível. Tente novamente em alguns minutos.");
+        if (err.name === 'AbortError') {
+          setError("Tempo limite excedido. Verifique sua conexão e tente novamente.");
+        } else {
+          setError("O servidor está temporariamente indisponível. Tente novamente em alguns minutos.");
+        }
       });
+
+    return () => {
+      clearTimeout(timeoutId);
+      abortController.current?.abort();
+    };
   }, [setLocation]);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     window.location.href = "/";
-  };
+  }, []);
 
   return (
-    <div className="fixed inset-0 bg-black">
+    <div className="fixed inset-0 bg-black touch-none">
       <Button
         variant="outline"
         size="default"
@@ -73,7 +101,7 @@ export default function Play() {
         data-testid="button-back"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
-        VOLTAR AO MENU
+        VOLTAR
       </Button>
       
       {loading && (
@@ -97,7 +125,7 @@ export default function Play() {
           id="game"
           ref={containerRef}
           className="w-full h-full"
-          style={{ width: "100%", height: "100%" }}
+          style={{ width: "100%", height: "100%", contain: "layout style paint" }}
         />
       )}
     </div>
