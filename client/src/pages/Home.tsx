@@ -32,7 +32,8 @@ const localGames: GameWithCore[] = [
 const platforms = [
   { id: "all", name: "Todos" },
   { id: "snes", name: "Super Nintendo" },
-  { id: "psp", name: "PSP" },
+  { id: "n64", name: "Nintendo 64" },
+  { id: "psx", name: "PlayStation 1" },
 ];
 
 export default function Home() {

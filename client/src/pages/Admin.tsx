@@ -14,7 +14,8 @@ import type { Game } from "@shared/schema";
 
 const platforms = [
   { id: "snes", name: "Super Nintendo", accept: ".zip,.sfc,.smc" },
-  { id: "psp", name: "PSP", accept: ".iso,.cso,.zip" },
+  { id: "n64", name: "Nintendo 64", accept: ".zip,.n64,.z64,.v64" },
+  { id: "psx", name: "PlayStation 1", accept: ".bin,.cue,.iso,.zip" },
 ];
 
 export default function Admin() {
@@ -157,7 +158,7 @@ export default function Admin() {
 
               <div className="space-y-2">
                 <Label htmlFor="rom">
-                  Arquivo ROM ({platform === "psp" ? "ISO/CSO/ZIP" : "ZIP/SFC/SMC"})
+                  Arquivo ROM ({selectedPlatform?.accept || ".zip"})
                 </Label>
                 <Input
                   id="rom"
