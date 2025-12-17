@@ -42,10 +42,51 @@ function fetchWithRedirects(url: string, maxRedirects = 5): Promise<http.Incomin
   });
 }
 
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
+
+function generateToken(): string {
+  return Buffer.from(`${Date.now()}-${Math.random().toString(36)}`).toString("base64");
+}
+
+const validTokens = new Set<string>();
+
+function verifyToken(token: string | undefined): boolean {
+  return token ? validTokens.has(token) : false;
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+
+  app.post("/api/auth/login", (req, res) => {
+    const { username, password } = req.body;
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+      const token = generateToken();
+      validTokens.add(token);
+      res.json({ token });
+    } else {
+      res.status(401).json({ error: "Invalid credentials" });
+    }
+  });
+
+  app.post("/api/auth/verify", (req, res) => {
+    const token = req.headers.authorization?.replace("Bearer ", "");
+    if (verifyToken(token)) {
+      res.json({ valid: true });
+    } else {
+      res.status(401).json({ valid: false });
+    }
+  });
+
+  app.post("/api/auth/logout", (req, res) => {
+    const token = req.headers.authorization?.replace("Bearer ", "");
+    if (token) {
+      validTokens.delete(token);
+    }
+    res.json({ success: true });
+  });
 
   app.get("/api/games", async (_req, res) => {
     try {
@@ -57,6 +98,10 @@ export async function registerRoutes(
   });
 
   app.post("/api/games", async (req, res) => {
+    const token = req.headers.authorization?.replace("Bearer ", "");
+    if (!verifyToken(token)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
     try {
       const result = insertGameSchema.safeParse(req.body);
       if (!result.success) {
@@ -70,6 +115,10 @@ export async function registerRoutes(
   });
 
   app.delete("/api/games/:id", async (req, res) => {
+    const token = req.headers.authorization?.replace("Bearer ", "");
+    if (!verifyToken(token)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
     try {
       const id = parseInt(req.params.id);
       const deleted = await storage.deleteGame(id);
@@ -84,6 +133,10 @@ export async function registerRoutes(
   });
 
   app.post("/api/upload-rom", async (req, res) => {
+    const token = req.headers.authorization?.replace("Bearer ", "");
+    if (!verifyToken(token)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
     try {
       const chunks: Buffer[] = [];
       req.on("data", (chunk) => chunks.push(chunk));
@@ -108,6 +161,10 @@ export async function registerRoutes(
   });
 
   app.post("/api/upload-cover", async (req, res) => {
+    const token = req.headers.authorization?.replace("Bearer ", "");
+    if (!verifyToken(token)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
     try {
       const chunks: Buffer[] = [];
       req.on("data", (chunk) => chunks.push(chunk));

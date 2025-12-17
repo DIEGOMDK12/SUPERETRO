@@ -9,6 +9,7 @@ import NotFound from "@/pages/not-found";
 
 const Play = lazy(() => import("@/pages/Play"));
 const Admin = lazy(() => import("@/pages/Admin"));
+const Login = lazy(() => import("@/pages/Login"));
 
 function LoadingFallback() {
   return (
@@ -24,6 +25,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/play" component={Play} />
+        <Route path="/login" component={Login} />
         <Route path="/admin" component={Admin} />
         <Route component={NotFound} />
       </Switch>
