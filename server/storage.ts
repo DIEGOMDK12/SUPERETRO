@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Game, type InsertGame, type Save, type InsertSave, type FileRecord, type InsertFile, users, games, saves, files } from "@shared/schema";
+import { type User, type InsertUser, type Game, type InsertGame, type Save, type InsertSave, type FileRecord, type InsertFile, type Capybara, type InsertCapybara, users, games, saves, files, capybaras } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 
@@ -14,6 +14,8 @@ export interface IStorage {
   createSave(save: InsertSave): Promise<Save>;
   createFile(file: InsertFile): Promise<FileRecord>;
   getFile(id: number): Promise<FileRecord | undefined>;
+  getCapybaras(): Promise<Capybara[]>;
+  createCapybara(capybaras: InsertCapybara): Promise<Capybara>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -73,6 +75,15 @@ export class DatabaseStorage implements IStorage {
   async getFile(id: number): Promise<FileRecord | undefined> {
     const [file] = await db.select().from(files).where(eq(files.id, id));
     return file;
+  }
+
+  async getCapybaras(): Promise<Capybara[]> {
+    return db.select().from(capybaras).orderBy(desc(capybaras.id));
+  }
+
+  async createCapybara(insertCapybara: InsertCapybara): Promise<Capybara> {
+    const [capy] = await db.insert(capybaras).values(insertCapybara).returning();
+    return capy;
   }
 }
 

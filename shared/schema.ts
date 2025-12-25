@@ -62,3 +62,20 @@ export const insertFileSchema = createInsertSchema(files).omit({
 
 export type InsertFile = z.infer<typeof insertFileSchema>;
 export type FileRecord = typeof files.$inferSelect;
+
+export const capybaras = pgTable("capybaras", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url").notNull(),
+  location: text("location"),
+  createdAt: text("created_at").notNull().default(sql`now()`),
+});
+
+export const insertCapybaraSchema = createInsertSchema(capybaras).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertCapybara = z.infer<typeof insertCapybaraSchema>;
+export type Capybara = typeof capybaras.$inferSelect;

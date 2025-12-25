@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import https from "https";
 import http from "http";
 import { storage } from "./storage";
-import { insertGameSchema, insertSaveSchema } from "@shared/schema";
+import { insertGameSchema, insertSaveSchema, insertCapybaraSchema } from "@shared/schema";
 import fs from "fs";
 import path from "path";
 
@@ -269,6 +269,28 @@ export async function registerRoutes(
       res.status(201).json(save);
     } catch (err) {
       res.status(500).json({ error: "Failed to save game" });
+    }
+  });
+
+  app.get("/api/capybaras", async (_req, res) => {
+    try {
+      const capys = await storage.getCapybaras();
+      res.json(capys);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to fetch capybaras" });
+    }
+  });
+
+  app.post("/api/capybaras", async (req, res) => {
+    try {
+      const result = insertCapybaraSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ error: result.error.message });
+      }
+      const capy = await storage.createCapybara(result.data);
+      res.status(201).json(capy);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to create capybara" });
     }
   });
 
