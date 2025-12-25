@@ -42,8 +42,8 @@ function fetchWithRedirects(url: string, maxRedirects = 5): Promise<http.Incomin
   });
 }
 
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "diegomdk";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "506731";
+const ADMIN_USERNAME = "diegomdk";
+const ADMIN_PASSWORD = "506731";
 
 function generateToken(): string {
   return Buffer.from(`${Date.now()}-${Math.random().toString(36)}`).toString("base64");
@@ -62,14 +62,17 @@ export async function registerRoutes(
 
   app.post("/api/auth/login", (req, res) => {
     const { username, password } = req.body;
-    console.log(`Login attempt for ${username} with password ${password}`);
+    // Log as credenciais enviadas para depuração
+    console.log(`Tentativa de login: Usuário [${username}], Senha [${password}]`);
+    console.log(`Esperado: Usuário [${ADMIN_USERNAME}], Senha [${ADMIN_PASSWORD}]`);
+
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      console.log("Login successful");
+      console.log("Login bem-sucedido!");
       const token = generateToken();
       validTokens.add(token);
       res.json({ token });
     } else {
-      console.log("Login failed: invalid credentials");
+      console.log("Login falhou: credenciais não conferem.");
       res.status(401).json({ error: "Invalid credentials" });
     }
   });
