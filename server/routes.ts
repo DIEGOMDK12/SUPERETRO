@@ -62,11 +62,14 @@ export async function registerRoutes(
 
   app.post("/api/auth/login", (req, res) => {
     const { username, password } = req.body;
+    console.log(`Login attempt for ${username} with password ${password}`);
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+      console.log("Login successful");
       const token = generateToken();
       validTokens.add(token);
       res.json({ token });
     } else {
+      console.log("Login failed: invalid credentials");
       res.status(401).json({ error: "Invalid credentials" });
     }
   });
