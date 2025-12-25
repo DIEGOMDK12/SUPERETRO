@@ -60,6 +60,25 @@ export default function Admin() {
     enabled: authenticated === true,
   });
 
+  const localGames: Game[] = [
+    {
+      id: -1,
+      title: "Super Mario World",
+      core: "snes",
+      cover: "@assets/super-mario-world_1766698426438.jpg",
+      rom: "/super-mario-world.zip",
+    },
+    {
+      id: -2,
+      title: "Super Bomberman 4",
+      core: "snes",
+      cover: "@assets/image_1766698488699.png",
+      rom: "/bomberman4.zip",
+    },
+  ];
+
+  const allGames = [...localGames, ...games];
+
   const createGame = useMutation({
     mutationFn: async (gameData: { title: string; cover: string; rom: string; core: string }) => {
       const token = localStorage.getItem("adminToken");
@@ -170,9 +189,9 @@ export default function Admin() {
   const selectedPlatform = platforms.find(p => p.id === platform);
   const getPlatformName = (core: string) => platforms.find(p => p.id === core)?.name || core.toUpperCase();
 
-  const totalGames = games.length;
-  const snesGames = games.filter(g => g.core === "snes").length;
-  const n64Games = games.filter(g => g.core === "n64").length;
+  const totalGames = allGames.length;
+  const snesGames = allGames.filter(g => g.core === "snes").length;
+  const n64Games = allGames.filter(g => g.core === "n64").length;
 
   if (authenticated === null) {
     return (
@@ -350,7 +369,7 @@ export default function Admin() {
                 </div>
               ) : (
                 <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-                  {games.map((game) => (
+                  {allGames.map((game) => (
                     <div
                       key={game.id}
                       data-testid={`game-item-${game.id}`}
@@ -358,7 +377,7 @@ export default function Admin() {
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <img
-                          src={game.cover}
+                          src={game.cover.startsWith("@assets") ? `/attached_assets/${game.cover.split("/").pop()}` : game.cover}
                           alt={game.title}
                           className="w-12 h-16 object-cover rounded flex-shrink-0"
                         />
@@ -369,14 +388,16 @@ export default function Admin() {
                           </Badge>
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        data-testid={`button-delete-${game.id}`}
-                        onClick={() => deleteGame.mutate(game.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      {game.id > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          data-testid={`button-delete-${game.id}`}
+                          onClick={() => deleteGame.mutate(game.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      )}
                     </div>
                   ))}
                 </div>
