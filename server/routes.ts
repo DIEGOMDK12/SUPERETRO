@@ -42,8 +42,8 @@ function fetchWithRedirects(url: string, maxRedirects = 5): Promise<http.Incomin
   });
 }
 
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "diegomdk";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "506731";
 
 function generateToken(): string {
   return Buffer.from(`${Date.now()}-${Math.random().toString(36)}`).toString("base64");
