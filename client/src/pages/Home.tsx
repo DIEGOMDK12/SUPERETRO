@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Game, Capybara } from "@shared/schema";
 import marioWorldCover from "@assets/super-mario-world_1766698426438.jpg";
+import bomberman4Cover from "@assets/image_1766698488699.png";
 
 interface GameWithCore extends Game {
   core: string;
@@ -26,7 +27,7 @@ const localGames: GameWithCore[] = [
     id: -2,
     title: "Super Bomberman 4",
     core: "snes",
-    cover: "https://upload.wikimedia.org/wikipedia/en/8/85/Super_Bomberman_4_Coverart.png",
+    cover: bomberman4Cover,
     rom: "/bomberman4.zip",
   },
 ];
