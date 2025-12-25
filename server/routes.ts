@@ -62,17 +62,23 @@ export async function registerRoutes(
 
   app.post("/api/auth/login", (req, res) => {
     const { username, password } = req.body;
-    // Log as credenciais enviadas para depuração
-    console.log(`Tentativa de login: Usuário [${username}], Senha [${password}]`);
-    console.log(`Esperado: Usuário [${ADMIN_USERNAME}], Senha [${ADMIN_PASSWORD}]`);
+    
+    const targetUser = "diegomdk";
+    const targetPass = "506731";
 
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    const providedUser = String(username || "").trim().toLowerCase();
+    const providedPass = String(password || "").trim();
+
+    console.log(`Tentativa de login: Usuário fornecido [${providedUser}], Senha fornecida [${providedPass}]`);
+    console.log(`Comparando com: Usuário alvo [${targetUser}], Senha alvo [${targetPass}]`);
+
+    if (providedUser === targetUser && providedPass === targetPass) {
       console.log("Login bem-sucedido!");
       const token = generateToken();
       validTokens.add(token);
       res.json({ token });
     } else {
-      console.log("Login falhou: credenciais não conferem.");
+      console.log(`Login falhou: Usuário [${providedUser}] ou Senha [${providedPass}] não conferem.`);
       res.status(401).json({ error: "Invalid credentials" });
     }
   });
